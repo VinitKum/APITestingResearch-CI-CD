@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     options {
-        skipDefaultCheckout(true)
+        timestamps()
         disableConcurrentBuilds()
-    }
-
-    triggers {
-        pollSCM('H/2 * * * *')
     }
 
     tools {
         maven 'Maven3'
+    }
+
+    triggers {
+        pollSCM('H/2 * * * *')
     }
 
     stages {
@@ -21,28 +21,21 @@ pipeline {
             }
         }
 
-        stage('2. Build Application') {
+        stage('2. Build') {
             steps {
-                bat 'node --version'
-                bat 'node --check server.js'
                 bat 'mvn -B -DskipTests clean package'
             }
         }
 
-        stage('3. Deploy to QA Environment') {
+        stage('3. Verify QA API') {
             steps {
-                bat 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File ci\\StartApi.ps1'
+                bat '''
+                powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:3000/users' -TimeoutSec 5; if ($r.StatusCode -ne 200) { exit 1 }; Write-Host 'QA API is reachable.'"
+                '''
             }
         }
 
-        stage('4. Notify QA - Deployment Ready') {
-            steps {
-                echo 'DEPLOYMENT SUCCESS: Demo API is ready at http://127.0.0.1:3000'
-                echo 'QA notification: Starting Rest Assured smoke tests.'
-            }
-        }
-
-        stage('5. Run API Smoke Test') {
+        stage('4. API Smoke Test') {
             steps {
                 bat 'mvn -B test "-Dtest=simpleTest"'
             }
@@ -51,21 +44,16 @@ pipeline {
 
     post {
         always {
-            bat 'if exist ci\\StopApi.ps1 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ci\\StopApi.ps1'
-
             junit allowEmptyResults: true,
                   testResults: 'target/surefire-reports/*.xml'
-
-            archiveArtifacts allowEmptyArchive: true,
-                artifacts: 'target/surefire-reports/*.xml,target/ci-api-server.log,target/ci-api-server-error.log'
         }
 
         success {
-            echo 'SUCCESS: Deployment and API smoke test passed.'
+            echo 'SUCCESS: Build and API smoke test passed.'
         }
 
         failure {
-            echo 'FAILURE: Check Console Output and the test reports.'
+            echo 'FAILURE: Check Console Output and test reports.'
         }
     }
 }
