@@ -1,3 +1,4 @@
+// Verify automatic SCM polling trigger
 pipeline {
     agent any
 
