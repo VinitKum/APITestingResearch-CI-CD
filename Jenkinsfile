@@ -29,9 +29,8 @@ pipeline {
 
         stage('3. Verify QA API') {
             steps {
-                bat '''
-                powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:3000/users' -TimeoutSec 5; if ($r.StatusCode -ne 200) { exit 1 }; Write-Host 'QA API is reachable.'"
-                '''
+                bat 'curl.exe --fail --silent --show-error --output NUL --max-time 5 http://127.0.0.1:3000/users'
+                echo 'QA API is reachable.'
             }
         }
 
