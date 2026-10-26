@@ -50,10 +50,38 @@ pipeline {
 
         success {
             echo 'SUCCESS: Build and API smoke test passed.'
+
+            script {
+                try {
+                    slackSend(
+                        channel: '#all-jenkins-ci-notifications',
+                        color: 'good',
+                        tokenCredentialId: 'slack-bot-token',
+                        botUser: true,
+                        message: "✅ BUILD SUCCESS\nJob: ${env.JOB_NAME}\nBuild: #${env.BUILD_NUMBER}\n<${env.BUILD_URL}|Open Jenkins build>"
+                    )
+                } catch (err) {
+                    echo "Slack notification failed: ${err.message}"
+                }
+            }
         }
 
         failure {
             echo 'FAILURE: Check Console Output and test reports.'
+
+            script {
+                try {
+                    slackSend(
+                        channel: '#all-jenkins-ci-notifications',
+                        color: 'danger',
+                        tokenCredentialId: 'slack-bot-token',
+                        botUser: true,
+                        message: "❌ BUILD FAILED\nJob: ${env.JOB_NAME}\nBuild: #${env.BUILD_NUMBER}\n<${env.BUILD_URL}console|Open Console Output>"
+                    )
+                } catch (err) {
+                    echo "Slack notification failed: ${err.message}"
+                }
+            }
         }
     }
 }
