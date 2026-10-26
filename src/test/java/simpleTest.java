@@ -13,7 +13,7 @@ public class simpleTest
     {
         given()
                 .contentType(ContentType.JSON)
-                .when().get("http://localhost:3000/users")
+                .when().get("http://127.0.0.1:3000/users")
                 .then().statusCode(200);
     }
 
