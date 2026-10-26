@@ -14,7 +14,7 @@ public class simpleTest
         given()
                 .contentType(ContentType.JSON)
                 .when().get("http://127.0.0.1:3000/users")
-                .then().statusCode(200);
+                .then().statusCode(201);
     }
 
 }
