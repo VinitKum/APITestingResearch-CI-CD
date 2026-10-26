@@ -27,12 +27,12 @@ pipeline {
             }
         }
 
-        stage('3. Verify QA API') {
-            steps {
-                bat 'curl.exe --fail --silent --show-error --output NUL --max-time 5 http://127.0.0.1:3000/users'
-                echo 'QA API is reachable.'
-            }
-        }
+      stage('3. Verify QA API') {
+          steps {
+              bat '"%SystemRoot%\\System32\\curl.exe" --fail --silent --show-error --output NUL --max-time 5 http://127.0.0.1:3000/users'
+              echo 'QA API is reachable.'
+          }
+      }
 
         stage('4. API Smoke Test') {
             steps {
